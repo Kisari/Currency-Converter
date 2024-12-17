@@ -10,7 +10,7 @@ import Combine
 
 struct InputSection: View {
     var title: String
-    @State var viewModel: CurrentCurrencyConverterViewModel
+    @ObservedObject var viewModel: CurrentCurrencyConverterViewModel
     var isBase: Bool
     
     var body: some View {
@@ -20,19 +20,29 @@ struct InputSection: View {
                 .foregroundColor(.gray)
             HStack(spacing: 20){
                 Menu {
-                    
+                    ForEach(Country.countryData, id: \.self) { country in
+                        Button(country.countryName, action: {
+                            if isBase {
+                                viewModel.base = country.countryCurrency
+                                viewModel.baseCode = country.countryCode
+                            } else {
+                                viewModel.nextTarget = country.countryCurrency
+                                viewModel.nextTargetCode = country.countryCode
+                            }
+                        })
+                    }
                  } label: {
                      HStack (spacing: 5) {
-                         Text(viewModel.emojiFlag(isBase ? viewModel.base : viewModel.nextTarget))
+                         Text(viewModel.emojiFlag(isBase ? viewModel.baseCode : viewModel.nextTargetCode))
                                .font(.system(size: 64))
                          Text(isBase ? viewModel.base : viewModel.nextTarget)
                              .cornerRadius(8)
-                             .foregroundColor(.blue)
+                             .foregroundStyle(Color("darkblue"))
                              .fontWeight(.bold)
                              .font(.title3)
 
                          Image(systemName: "chevron.down") // Dropdown arrow
-                             .foregroundColor(.blue)
+                             .foregroundStyle(Color("darkblue"))
                      }
                  }
                 
@@ -47,17 +57,18 @@ struct InputSection: View {
                         .multilineTextAlignment(.trailing)
                         .cornerRadius(8)
                         .onReceive(Just(viewModel.inputAmount)) { newValue in
-                            let filtered = newValue.filter { "0123456789.".contains($0) }
-                            if filtered != newValue {
-                                viewModel.inputAmount = filtered
-                            }
-                        }
+                          let allowedCharacters = "0123456789"
+                          let filtered = newValue.filter { allowedCharacters.contains($0) }
+                          if filtered != newValue {
+                              viewModel.inputAmount = filtered
+                          }
+                      }
                 }
                 else{
-                    TextField("Converted amount", text: $viewModel.convertedAmount)
+                    TextField("Result amount", text: $viewModel.convertedAmount)
                         .padding(.all, 12)
                         .frame(maxWidth: .infinity)
-                        .background(Color.blue.opacity(0.2))
+                        .background(Color.gray.opacity(0.2))
                         .foregroundColor(.black)
                         .fontWeight(.bold)
                         .multilineTextAlignment(.trailing)

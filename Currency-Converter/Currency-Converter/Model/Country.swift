@@ -7,7 +7,8 @@
 
 import Foundation
 
-struct Country {
+struct Country : Identifiable, Hashable{
+    var id = UUID()
     var countryName: String
     var countryCode: String
     var countryCurrency: String
@@ -270,16 +271,8 @@ extension Country{
         ]
     }
     
-    static func getCountryByName(name: String) -> Country? {
-        countryData.first { $0.countryName.localizedUppercase == name.localizedUppercase }
-    }
-    
     static func getCountryByCode(code: String) -> Country? {
         countryData.first { $0.countryCode.localizedUppercase == code.localizedUppercase }
-    }
-    
-    static func getCountryByCurrency(currency: String) -> Country? {
-        countryData.first { $0.countryCurrency.localizedUppercase == currency.localizedUppercase }
     }
 }
 

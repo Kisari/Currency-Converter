@@ -8,41 +8,44 @@
 import SwiftUI
 
 struct Home: View {
-    @State private var api: CurrentCurrencyConverterViewModel = .init()
+    @StateObject var currencyViewModel: CurrentCurrencyConverterViewModel = CurrentCurrencyConverterViewModel()
     
     var body: some View {
         VStack(spacing: 20) {
             Text("Currency Converter")
                 .font(.title)
                 .fontWeight(.bold)
+                .foregroundStyle(Color("darkblue"))
             
             Text("Check live rates, set rate alerts, receive notifications and more.")
-                .font(.subheadline)
+                .font(.title3)
                 .foregroundColor(.gray)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
             
             VStack(spacing: 16) {
                 HStack {
-                    InputSection(title: "Amount", viewModel: api, isBase: true)
+                    InputSection(title: "Amount", viewModel: currencyViewModel, isBase: true)
                 }
 
-                Button(action: {
-//                    let temp = viewModel.baseCurrency
-//                    viewModel.baseCurrency = viewModel.targetCurrency
-//                    viewModel.targetCurrency = temp
-//                    viewModel.fetchExchangeRate()
-                }) {
-                    Image(systemName: "arrow.left.arrow.right")
-                        .font(.largeTitle)
-                        .padding()
-                        .background(Color.blue.opacity(0.2))
-                        .clipShape(Circle())
-                        .rotationEffect(.degrees(90))
+                if(currencyViewModel.isLoading){
+                    ProgressView()
                 }
-                
+                else{
+                    Button(action: {    
+                        currencyViewModel.fetchCurrentCurrencyConversion()
+                    }) {
+                        Text("Exchange")
+                            .font(.title)
+                            .padding(.all, 15)
+                            .foregroundStyle(.white)
+                            .background(Color("darkblue"))
+                            .clipShape(RoundedRectangle(cornerRadius: 20))
+                    }
+                }
+    
                 HStack {
-                    InputSection(title: "Converted Amount", viewModel: api, isBase: false)
+                    InputSection(title: "Converted Amount", viewModel: currencyViewModel, isBase: false)
                 }
             }
             .padding()
@@ -54,21 +57,37 @@ struct Home: View {
             Text("Current Exchange Rate")
                 .font(.title2)
                 .fontWeight(.bold)
+                .foregroundStyle(Color("darkblue"))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
             
-            if let conversionRate = api.conversionRate {
-                Text("1 \(api.base) = \(String(format: "%.2f", conversionRate)) \(api.nextTarget)")
+            if(currencyViewModel.convertedAmount.isEmpty){
+                Text("No current history")
                     .font(.title3)
                     .foregroundColor(.gray)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
             }
-
-
+            else{
+                if let conversionRate = currencyViewModel.conversionRate {
+                    Text("1 \(currencyViewModel.base) = \(String(format: "%.2f", conversionRate)) \(currencyViewModel.nextTarget)")
+                        .font(.title3)
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                }
+            }
             
             Spacer()
         }
+        .alert("Error", isPresented: $currencyViewModel.showError, actions: {
+            Button("OK", role: .cancel) {
+                currencyViewModel.showError = false
+                currencyViewModel.errorMessage = ""
+            }
+        }, message: {
+            Text(currencyViewModel.errorMessage)
+        })
     }
 }
 

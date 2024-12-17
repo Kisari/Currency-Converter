@@ -1,0 +1,23 @@
+{
+  "images" : [
+    {
+      "filename" : "Money Logo designs template vector, Finance logo designs vector.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "Money Logo designs template vector, Finance logo designs vector 1.png",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "Money Logo designs template vector, Finance logo designs vector 2.png",
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
