@@ -55,6 +55,33 @@ struct Currency_ConverterTests {
         }
     }
     
+    @Test("Test should throw error when there is no available exchange rate")
+    func testNoAvaibleExchangeRate() async throws {
+        MockURLProtocol.reset()
+        // Mock a successful API response
+        let mockRates: [String: Double] = ["USD": 1.0, "TEST": 23000.0]
+        let mockExchangeRate = ExchangeRate(success: true, error: nil, rates: mockRates)
+        
+        let viewModel = await MainActor.run { CurrentCurrencyConverterViewModel(urlSession: setupMockURLSession(), testAPI: "https://api.exchangeratesapi.io/latest") }
+        await MainActor.run {
+            viewModel.inputAmount = "100"
+            viewModel.base = "USD"
+            viewModel.nextTarget = "VND"
+        }
+        
+        // Mock API Call
+        MockURLProtocol.reset()
+        MockURLProtocol.mockResponse(with: mockExchangeRate)
+        await viewModel.fetchCurrentCurrencyConversion()
+        
+        try await Task.sleep(nanoseconds: 5_000_000_000)
+        
+        await MainActor.run {
+            #expect(viewModel.errorMessage == "Conversion rates for the currencies not found")
+            #expect(viewModel.showError == true)
+        }
+    }
+    
     @Test("Test should throw an error when there is no API access key")
     func testErrorInResponse() async throws {
         MockURLProtocol.reset()
